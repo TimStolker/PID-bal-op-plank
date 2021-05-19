@@ -18,7 +18,7 @@ int main( ){    //test voor afstand meten met hr-sr04 ultra sonic sensor
     hwlib::cout << "started \n";
     int distance;
     for(;;){
-        distance = sonarSensor.measure();
+        distance = sonarSensorBall.measure();
         hwlib::cout<< "distance: " << distance << hwlib::endl;
         if(distance < 22){
             servo.write(1);
