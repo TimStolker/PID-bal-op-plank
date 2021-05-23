@@ -22,10 +22,8 @@ void write_angle( uint_fast16_t angle,  target::pin_out & servo){
 }
 
 int main( ){  
-    int angleMax = -90;
-    int angleMin = 90;  
-    float angleMaxRad = -0.5*PI;
-    float angleMinRad = 0.5*PI;
+    float angleMaxRad = PI;
+    float angleMinRad = 0.0;
 
     float setpoint, setpointPrev;
     float y, yPrev;
@@ -51,8 +49,6 @@ int main( ){
     hwlib::wait_ms( 2000 );  
     hwlib::cout << "started \n";
 
-    hwlib::wait_ms( 1000 );  
-
     setpointPrev = sonarSensorHand.measure();
     yPrev = sonarSensorBall.measure();
 
@@ -64,7 +60,8 @@ int main( ){
         y = (0.53*y + 0.47*yPrev);
         hwlib::wait_ms(5);
 
-        error = round(100*(y-setpoint)*0.01);
+        error = round(y-setpoint)*0.01;
+        hwlib::cout<<"Error: "<<int(error)<<" y: "<<int(y)<<" setpoint: "<<int(setpoint)<<"\n";
 
         P = Kp*error;
 
@@ -74,9 +71,9 @@ int main( ){
 
         D = (Kd/0.09)*(y - yPrev);
         D = 0.56*D + 0.44*DPrev; //filteren van D
-        U = P + I + round(100*D)*0.01; // U in radialen
-        float temp = (U*100);
-        hwlib::cout<<"U(*100): "<<int(temp)<<"\n"; 
+        U = -1*(P + I + (D*0.01)); // U in radialen
+
+        hwlib::cout<<"U: "<<int(U)<<"\n";
 
         ///Motor kan niet verder dan 180 graden draaien///
         if(U < angleMinRad){
@@ -92,13 +89,8 @@ int main( ){
         }
         U = round((U*180/PI)); //Zet U op in graden
 
-        U = map(U, angleMin, angleMax, 0, 180); //map de waarde naar servo motor graden
- 
+        write_angle(round(U), servo);
 
-        if(U < 83 || U > 95 || absolute(error) > 0.02){
-            write_angle(round(U), servo);
-            hwlib::cout<<"triggered \n";
-        }
         
         hwlib::wait_ms(25);
 
